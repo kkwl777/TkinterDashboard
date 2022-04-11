@@ -15,6 +15,7 @@ command1 = """CREATE TABLE IF NOT EXISTS employees(
             "Employee_Type" TEXT NOT NULL,
             "Employee_Name" TEXT NOT NULL,
             "Password" TEXT NOT NULL,
+            "LastSeen" TEXT NOT NULL,
             PRIMARY KEY("Employee_Name")
             )"""
 
@@ -121,8 +122,7 @@ def login():
                     countBtn.pack(side=TOP)
 
             else:
-                messagebox.showinfo(
-                    "Error", "User/Password Incorrect or User does not exist")
+                print('error')
         print('LOGGING IN...')
 
 
