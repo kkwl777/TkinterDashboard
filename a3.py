@@ -1,3 +1,10 @@
+#Assignment 3: Group Term Papep
+#By: Kevin Li and Alexander Grozdanovski
+'''
+When running the application for the first time use
+Employee: Owner
+Password: serialNumber12345
+'''
 import tkinter as tk
 from tkinter import *
 import _tkinter
@@ -28,7 +35,7 @@ HEIGHT = 700
 WIDTH = 800
 root = Tk()
 
-root.geometry("400x150")
+root.geometry("550x150")
 
 Title1 = tk.Label(root, text="OFFICE CLOCK IN", fg="blue",
                   font=(None, 24))
