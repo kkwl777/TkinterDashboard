@@ -136,7 +136,96 @@ def login():
 eBtn = Button(root, text="LOG IN", command=login)
 eBtn.pack(side=BOTTOM)
 
+class BrowsePage(tk.Frame):
+    ''' the Browse page must show all the items in the database and allow
+    access to editing and deleting, as well as the ability to go to a screen
+    to add new ones. This is the 'home' screen.
+    '''
 
+    def __init__(self, parent, controller, persist=None):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+
+        label = tk.Label(self, text="Browse Contacts",
+                         font=controller.title_font)
+        label.grid(column=0, pady=10)
+
+        ''' '''
+        # set up the treeview
+        contact_table = tk.Frame(self, width=500)
+        contact_table.grid(column=0)
+        scrollbarx = tk.Scrollbar(contact_table, orient=tk.HORIZONTAL)
+        scrollbary = tk.Scrollbar(contact_table, orient=tk.VERTICAL)
+        self.tree = ttk.Treeview(contact_table, columns=("id", "name", "position"),
+                                 selectmode="extended", yscrollcommand=scrollbary.set, xscrollcommand=scrollbarx.set)
+        scrollbary.config(command=self.tree.yview)
+        scrollbary.pack(side=tk.RIGHT, fill=tk.Y)
+        scrollbarx.config(command=self.tree.xview)
+        scrollbarx.pack(side=tk.BOTTOM, fill=tk.X)
+        # this section would allow for expanding the viewable columns
+        self.tree.heading('id', text="ID", anchor=tk.W)
+        self.tree.heading('name', text="Name", anchor=tk.W)
+        self.tree.heading('position', text="Job Position", anchor=tk.W)
+        self.tree.column('#0', stretch=tk.NO, minwidth=0, width=0)
+        self.tree.column('#1', stretch=tk.NO, minwidth=0, width=60)
+        self.tree.column('#2', stretch=tk.NO, minwidth=0, width=200)
+        self.tree.column('#3', stretch=tk.NO, minwidth=0, width=200)
+        self.tree.bind('<<TreeviewSelect>>', self.on_select)
+        self.tree.pack()
+        self.selected = []
+
+        # this object is the data persistence model
+        self.persist = persist
+        all_records = self.persist.get_all_sorted_records()
+        # grab all records from db and add them to the treeview widget
+        for record in all_records:
+            self.tree.insert("", 0, values=(
+                record.rid, record.name, record.email))
+
+        ''' '''
+
+        # I don't love clunkiness of vertical ordering here, should use horizontal space better
+        edit_button = tk.Button(self, text="Edit Record",
+                                command=self.edit_selected)
+        edit_button.grid(column=0)
+
+        delete_button = tk.Button(self, text="Delete Record(s)",
+                                  command=self.delete_selected)
+        delete_button.grid(column=0)
+
+        new_button = tk.Button(self, text="Add New Record",
+                               command=lambda: controller.show_frame("CreatePage"))
+        new_button.grid(column=0)
+
+    def edit_selected(self):
+        idx = self.selected[0]  # use first selected item if multiple
+        record_id = self.tree.item(idx)['values'][0]
+        self.controller.show_frame("ReadPage", record_id)
+
+    def on_select(self, event):
+        ''' add the currently highlighted items to a list
+        '''
+        self.selected = event.widget.selection()
+
+    def delete_selected(self):
+        ''' uses the selected list to remove and delete certain records
+        '''
+        for idx in self.selected:
+            record_id = self.tree.item(idx)['values'][0]
+            # remove from the db
+            self.persist.delete_record(record_id)
+            # remove from the treeview
+            self.tree.delete(idx)
+
+    def update(self):
+        ''' to refresh the treeview, delete all its rows and repopulate from the db 
+        '''
+        for row in self.tree.get_children():
+            self.tree.delete(row)
+        all_records = self.persist.get_all_sorted_records()
+        for record in all_records:
+            self.tree.insert("", 0, values=(
+                record.rid, record.name, record.email))
 def countHours():
 
     cursor.execute(
